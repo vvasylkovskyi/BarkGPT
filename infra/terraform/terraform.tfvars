@@ -1,6 +1,6 @@
 availability_zone = "us-east-1a"
 instance_ami      = "ami-09e67e426f25ce0d7"
 instance_type     = "t2.micro"
-docker_image_tag  = "70b5d8e6dc390451426383f553197e96fafac78c"
+docker_image_tag  = "cb30861fe2456a1874700370e9888a578cdf90c8"
 domain = "iac-toolbox.com"
 app_url = "barkgpt-api.iac-toolbox.com"
