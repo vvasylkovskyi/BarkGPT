@@ -860,6 +860,8 @@ COPY . .
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
 ```
 
+After applying the changes, the docker image now has `362.9 MB`. Yey, great improvement!
+
 ## Deployment on AWS
 
 Finally, we got to the point where we have a code to generate a working docker image. This image is the app that we built containing a FastAPI server with one endpoint serving our BarkGPT - a barking AI model, a real good boy! With this setup we can build some pet project, and people can use our AI dog. This is pretty exciting!
