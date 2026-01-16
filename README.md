@@ -803,6 +803,99 @@ CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
 
 Since our model is public, there is no hussle in obtaining it, a simple download does the trick.
 
+As a nice local utility, I built a quick `docker-compose.yaml`:
+
+```yaml
+services:
+  server:
+    container_name: bark-gpt-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+```
+
+Now run `docker compose up` and wait for the image to build, and see it working fine.
+
+## Deployment on AWS
+
+Finally, we got to the point where we have a code to generate a working docker image. This image is the app that we built containing a FastAPI server with one endpoint serving our BarkGPT - a barking AI model, a real good boy! With this setup we can build some pet project, and people can use our AI dog. This is pretty exciting!
+
+The next step is to deploy this image on AWS. For that I invite you, to follow my tutorial: [IaC Toolbox](https://www.iac-toolbox.com). And set the docker image manually in the EC-2 `user_data` specs. Don't worry if you are new to AWS, that tutorial has got you covered.
+
+The `user_data` script for the EC-2 instance is as follows:
+
+```sh
+#!/bin/bash
+sudo apt-get update -y
+sudo apt-get install -y docker.io
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Add user to docker group
+sudo usermod -aG docker $USERNAME
+
+sudo docker run -d --name bark-gpt-api -p 80:80 <your-docker-username>/<your-image>:b69f40586b04da676a11f2fc2af676e403cf0b53 # My Image tag (read below on how to get it)
+```
+
+Note, I am using the SSL Load Balancer as a proxy. It is not surprising the our small dog AI model is not very demanding, even the EC-2 `t2.micro` can run SLM on its tiny CPU!
+
+### Note on the Architecture
+
+Beware that if you built the docker image on your MAC, it will most likely not work on the AWS EC-2 Linux machines due to CPU Architecture mismatch. To avoid this issue, the best thing to do is to build docker image directly on the Linux. One of the ways of doing it is by using Github Actions, that are free and have Linux Machines.
+
+The following code shows how to use Github Workflows to dispatch Github Actions. The script builds docker image and publishes it in docker hub:
+
+```yaml
+# .github/workflows/build-image.yaml
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Build Docker Image"
+        required: true
+
+jobs:
+  build_docker_image:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Container Image
+        run: |
+          TAG=${{ github.sha }}
+          echo "Using tag: $TAG"
+          docker build -f ./Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/<your-docker-image>:$TAG .
+          docker push ${{ secrets.DOCKER_USERNAME }}/<your-docker-image>:$TAG
+
+      - name: Set output tag
+        id: set_tag
+        run: echo "tag=${{ github.sha }}" >> "$GITHUB_OUTPUT"
+```
+
+Make sure that your Github Actions have the `DOCKER_USERNAME` and `DOCKER_PASSWORD` before running the action. Run the action.
+
+Once the action is done, grab the tag from docker hub and keep it for the image. In my case it is:
+
+```sh
+<your-docker-username>/<your-docker-image>:b69f40586b04da676a11f2fc2af676e403cf0b53
+```
+
+To my surprise the compressed size is only 700MB, much less than I expected. And it is a good thing.
+
 ## Final Thoughts
 
 Note, this BarkGPT is a fairly small Language Model, so there are few caveats, and differences with real-world deployments.
