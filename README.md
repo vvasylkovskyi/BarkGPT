@@ -818,6 +818,48 @@ services:
 
 Now run `docker compose up` and wait for the image to build, and see it working fine.
 
+#### Dockerfile with Torch + CUDA - 4.1GB Size
+
+When I first tried to deploy above script, I fell into what is called lassic EC2 + Docker + PyTorch trap. Our Docker image is 4.1GB, and is the Ec-2 instance is out of space to deploy it. However the our `bark_model.pt` is only 117KB, so where is the rest of the size came from? Turns out, it is from `torch` and all the GPU related code, in particular the `libcudnn_adv.so.9`. To fix this, we can change our docker image such that it only loads the CPU torch - since in practice we are not using GPU at all for this AI project.
+
+The fix is to change our `Dockerfile` to download the `torch` - CPU only version.
+
+```sh
+torch==2.9.1+cpu \
+    --extra-index-url https://download.pytorch.org/whl/cpu
+```
+
+Below is the full updated `Dockerfile`
+
+```Dockerfile
+FROM python:3.12-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir \
+    fastapi \
+    uvicorn \
+    transformers \
+    torch==2.9.1+cpu \
+    --extra-index-url https://download.pytorch.org/whl/cpu
+
+RUN mkdir -p /models
+
+RUN curl -L -o /models/bark_model.pt \
+    https://huggingface.co/vvasylkovskyi/barkgpt/resolve/main/bark_model.pt
+
+ENV MODEL_PATH=/models/bark_model.pt
+
+COPY . .
+
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+```
+
 ## Deployment on AWS
 
 Finally, we got to the point where we have a code to generate a working docker image. This image is the app that we built containing a FastAPI server with one endpoint serving our BarkGPT - a barking AI model, a real good boy! With this setup we can build some pet project, and people can use our AI dog. This is pretty exciting!
