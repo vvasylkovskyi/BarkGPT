@@ -839,7 +839,7 @@ sudo usermod -aG docker $USERNAME
 sudo docker run -d --name bark-gpt-api -p 80:80 <your-docker-username>/<your-image>:b69f40586b04da676a11f2fc2af676e403cf0b53 # My Image tag (read below on how to get it)
 ```
 
-Note, I am using the SSL Load Balancer as a proxy. It is not surprising the our small dog AI model is not very demanding, even the EC-2 `t2.micro` can run SLM on its tiny CPU!
+Note, I am using the API Gateway as an SSL proxy. It is not surprising the our small dog AI model is not very demanding, even the EC-2 `t2.micro` can run SLM on its tiny CPU!
 
 ### Note on the Architecture
 
@@ -893,8 +893,6 @@ Once the action is done, grab the tag from docker hub and keep it for the image.
 ```sh
 <your-docker-username>/<your-docker-image>:b69f40586b04da676a11f2fc2af676e403cf0b53
 ```
-
-To my surprise the compressed size is only 700MB, much less than I expected. And it is a good thing.
 
 ## Final Thoughts
 
