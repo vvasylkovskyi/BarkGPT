@@ -205,3 +205,13 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+./bark_model/**
+.terraform
+.env
+debug_dump
+terraform.tfstate
+terraform.tfstate.backup
+**/.aws-credentials
+.terraform.lock.hcl
+.terraform.tfstate.lock.info

@@ -1,0 +1,58 @@
+[project]
+name = "bark-gpt"
+version = "0.0.1"
+description = "A most simple LLM that barks and responds to user commands."
+readme = "README.md"
+authors = [
+  { name = "Viktor Vasylkovskyi", email = "viktor.vasylkovskyi@gmail.com" }
+]
+maintainers = [
+  { name = "Viktor Vasylkovskyi", email = "viktor.vasylkovskyi@gmail.com" }
+]
+license = { text = "MIT" }  # adjust if different
+requires-python = ">=3.12"
+
+dependencies = [
+    "torch>=2.9.1",
+    "fastapi>=0.124.4",
+    "uvicorn>=0.38.0",
+    "transformers>=4.57.3",
+]
+
+[project.urls]
+Homepage = "https://github.com/vvasylkovskyi/bark-gpt"
+Repository = "https://github.com/vvasylkovskyi/bark-gpt"
+
+[tool.poetry.group.dev.dependencies]
+dependencies = [
+  "pyright==1.1.374",
+  "ruff==0.5.5"
+]
+
+[tool.ruff]
+fix = true
+line-length = 120
+src = ["src", "tests"]
+target-version = "py311"
+exclude = [
+  ".bzr", ".direnv", ".eggs", ".git", ".hg", ".mypy_cache", ".nox", ".pants.d",
+  ".pytype", ".ruff_cache", ".svn", ".tox", ".venv", "__pypackages__", "_build",
+  "buck-out", "build", "dist", "node_modules", "venv"
+]
+
+[tool.ruff.format]
+indent-style = "space"
+line-ending = "lf"
+quote-style = "double"
+skip-magic-trailing-comma = true
+
+[tool.pyright]
+exclude = ["**/__pycache__"]
+ignore = []
+include = ["src"]
+strict = []
+venvPath = ".venv"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnknownParameterType = true
+reportUntypedFunctionDecorator = true

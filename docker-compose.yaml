@@ -1,0 +1,9 @@
+services:
+  server:
+    container_name: bark-gpt-api
+    # image: vvasylkovskyi1/vvasylkovskyi-bark-gpt-api:c60c211061a93c8b70935fa3576a297eaa5ba1d1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
