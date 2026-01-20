@@ -8,6 +8,10 @@ While there might not be many applications for such a model (unless you want to 
 
 This project is heavily inspired on [CatGPT](https://www.cat-gpt.com/), an AI that meows. I am a cat owner myself, although the market for meow AIs feels quite saturated with clear market dominance. I haven't seen any worthy dog GPTs, only mere amateur projects, so I think this project will just fit right in.
 
+## Demo
+
+Try demo at [BarkGPT](https://www.bark-slm.com/)
+
 ## Overview
 
 To get our BarkLLM from scratch, we need to do the following steps:
