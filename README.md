@@ -1,5 +1,7 @@
 # BarkGPT
 
+<div style="display: flex; justify-content: center; margin-bottom: 10px; "><img src="./og.png" alt="BarkGPT - The Smallest LLM" width="100%" height="150"/></div>
+
 AI LLM Project that barks trained from scratch.
 
 This is a hands-on tutorial about how to use Large Language Models and in particular, train one from scratch. Our goal here, is to train an LLM from scratch, with very low vocabulary, only dog barking.
