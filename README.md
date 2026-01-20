@@ -1,6 +1,6 @@
 # BarkGPT
 
-<div style="display: flex; justify-content: center; margin-bottom: 10px; "><img src="./og.png" alt="BarkGPT - The Smallest LLM" width="100%" height="150"/></div>
+<div style="display: flex; justify-content: center; margin-bottom: 10px; "><img src="./og.png" alt="BarkGPT - The Smallest LLM" width="100%" height="250"/></div>
 
 AI LLM Project that barks trained from scratch.
 
