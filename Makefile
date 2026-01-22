@@ -49,11 +49,11 @@ test: train test_hf_model
 	
 test_model:
 	@echo "Testing model..."
-	uv run python -m test.test_pytorch_gen
+	uv run python -m bark_gpt.test.test_pytorch_gen
 
 test_hf_model:
 	@echo "Testing Hugging Face integration..."
-	uv run python -m test.test_hf_gen
+	uv run python -m bark_gpt.test.test_hf_gen
 
 build_hf_model:
 	@echo "Building Hugging Face model..."
@@ -61,4 +61,12 @@ build_hf_model:
 
 test_model_hf:
 	@echo "Testing Hugging Face integration..."
-	uv run python -m test_model_hf
+	uv run python -m bark_gpt.test_model_hf
+
+train_rnn: install
+	@echo "Training RNN model..."
+	uv run python -m bark_rnn.train.train
+
+test_rnn_model:
+	@echo "Testing RNN model..."
+	uv run python -m bark_rnn.test.test
