@@ -36,6 +36,26 @@ class BarkRNN(nn.Module):
         return logits, hidden
 ```
 
+The core difference when comparing with transformers architecture is having one recurrent loop of neural networks at:
+
+```python
+# The RNN core
+self.rnn = nn.RNN(input_size=n_embd, hidden_size=hidden_size, batch_first=True)
+```
+
+While, in transformers, we have multiple layers:
+
+```python
+self.layers = nn.ModuleList(
+    [
+        nn.TransformerEncoderLayer(
+            d_model=n_embd, nhead=n_head, dim_feedforward=128
+        )
+        for _ in range(n_layer)
+    ]
+)
+```
+
 ### RNN Overview
 
 Recurrent Neural Networks were a breakthrough at the time because they solved what previous feedforward networks (FFN) couldn't - the sequences. FFN were good for classification tasks: fixed input -> output. But without looking back at the previous input, the next output could not be coherent enough to model language.
@@ -89,33 +109,20 @@ output_text = generate_rnn(
     stoi,
     itos,
     prompt,
-    max_new_tokens=200,
+    max_new_tokens=200, # longer sequences
     temperature=0.7,
     device="cpu",
 )
 print("Generated:", output_text)
 ```
 
+#### Running the long term memory test on RNN
+
+After training and testing the BarkRNN
+I ran and obtained the following result:
+
 ![alt text](image.png)
 
-### Comparing with BarkGPT
+Which is exactly the collapse we have been talking about! The BarnRNN is basically looping the same "woof arf ruff grrr" pattern. RNN can't remember the long term context so it just repeats what it learned locally.
 
-The first core difference when comparing with transformers architecture is having one recurrent loop of neural networks at:
-
-```python
-# The RNN core
-self.rnn = nn.RNN(input_size=n_embd, hidden_size=hidden_size, batch_first=True)
-```
-
-While, in transformers, we have multiple layers:
-
-```python
-self.layers = nn.ModuleList(
-    [
-        nn.TransformerEncoderLayer(
-            d_model=n_embd, nhead=n_head, dim_feedforward=128
-        )
-        for _ in range(n_layer)
-    ]
-)
-```
+### Increasing Dataset

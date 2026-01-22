@@ -23,7 +23,7 @@ tokens = prompt.split()  # simple tokenization
 input_ids = torch.tensor([[stoi[t] for t in tokens]])  # shape [1, seq_len]
 
 # 3️⃣ Generate output IDs
-output_ids = hf_model.generate(input_ids=input_ids, max_new_tokens=10, temperature=0.7)
+output_ids = hf_model.generate(input_ids=input_ids, max_new_tokens=200, temperature=0.7)
 
 # 4️⃣ Convert output IDs back to text
 output_tokens = [itos[i] for i in output_ids[0].tolist()]

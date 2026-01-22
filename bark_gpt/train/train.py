@@ -7,15 +7,16 @@ from bark_gpt.model.model import BarkGPT
 dataset, dataset_ids, vocab_size, stoi, itos = prepare_dataset()
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model = BarkGPT(vocab_size).to(device)
+model = BarkGPT(vocab_size, max_seq_len=max(len(seq) for seq in dataset_ids)).to(device)
+
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 loss_fn = nn.CrossEntropyLoss()
-
 batch_size = 16
+
+# pad sequences to max length
 seq_len = max(len(seq) for seq in dataset_ids)
 
 
-# pad sequences
 def pad(seq):
     pad_len = seq_len - len(seq)
     if pad_len > 0:
@@ -40,6 +41,7 @@ for epoch in range(5):
         total_loss += loss.item()
     print(f"Epoch {epoch+1}, Loss: {total_loss/len(padded):.4f}")
 
+# Save model
 torch.save(
     {
         "model_state": model.state_dict(),
@@ -47,5 +49,5 @@ torch.save(
         "itos": itos,
         "vocab_size": vocab_size,
     },
-    os.environ.get("MODEL_PATH", "bark_model.pt"),
+    os.environ.get("MODEL_PATH_GPT", "bark_gpt_model.pt"),
 )

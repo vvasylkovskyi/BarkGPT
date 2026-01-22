@@ -45,7 +45,7 @@ train: install
 	@echo "Training model..."
 	uv run python -m bark_gpt.train.train
 
-test: train test_hf_model
+test: train test_model
 	
 test_model:
 	@echo "Testing model..."
