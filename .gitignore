@@ -215,3 +215,6 @@ terraform.tfstate.backup
 **/.aws-credentials
 .terraform.lock.hcl
 .terraform.tfstate.lock.info
+bark_model/**
+bark_gpt_2_model/**
+bark_gpt_2_tokenizer/**

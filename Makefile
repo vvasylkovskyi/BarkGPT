@@ -70,3 +70,15 @@ train_rnn: install
 test_rnn_model:
 	@echo "Testing RNN model..."
 	uv run python -m bark_rnn.test.test
+
+load_datasets:
+	@echo "Loading datasets..."
+	uv run python datasets/load_dataset.py
+
+train_bark_gpt_2:
+	@echo "Training BarkGPT 2 model..."
+	uv run python -m bark_gpt_2.train.train
+
+test_bark_gpt_2:
+	@echo "Testing BarkGPT 2 model..."
+	uv run python -m bark_gpt_2.test.test_gen
