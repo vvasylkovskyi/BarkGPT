@@ -2,6 +2,19 @@
 
 Datasets are files with alot of text. Usually the text is split by lines, each representing a row in a dataset. For the demonstration of training a model on a dataset, I am going to download a small dataset of 12MB: [WebText-2 from Hugging Face](https://huggingface.co/datasets/Raziel1234/WebText-2/tree/main). This dataset contains general knowledge and is curated such that it is small and diverse, focused on academic learning.
 
+## Prerequisites
+
+To fully follow this article, I recommend trying building LLM from scratch. There is nothing quite like building something to understand how it works, and then reverse-engineer.
+
+Here are the previous reads:
+
+- [Building BarkGPT from scratch](./docs/01-building-from-scratch/README.md)
+
+## Demo
+
+- [Live Demo](https://www.bark-slm.com) - Try it yourself - this is Bark Agent
+- [Github Code is available in this repo in /bark_gpt_2 folder](https://github.com/vvasylkovskyi/BarkGPT/tree/main/bark_gpt_2) - Check it out and run locally!
+
 ## Downloading the Dataset
 
 With Hugging Faces, we can use the `datasets` library (`uv add datasets`) and download it as follows:
