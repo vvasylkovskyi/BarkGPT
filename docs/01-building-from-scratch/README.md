@@ -2,7 +2,7 @@
 
 **The smallest LLM you can realistically understand**
 
-<div style="display: flex; justify-content: center; margin-bottom: 10px; "><img src="./og.png" alt="BarkGPT - The Smallest LLM" width="100%" height="500"/></div>
+<div style="display: flex; justify-content: center; margin-bottom: 10px; "><img src="../../og.png" alt="BarkGPT - The Smallest LLM" width="100%" height="500"/></div>
 
 AI LLM Project that barks trained from scratch.
 
