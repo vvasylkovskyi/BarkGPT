@@ -1,6 +1,6 @@
 availability_zone = "us-east-1a"
 instance_ami      = "ami-09e67e426f25ce0d7"
 instance_type     = "t2.micro"
-docker_image_tag  = "c39596cd9baa765d625c7686a5f3f25bbdea5ed5"
+docker_image_tag  = "a1c62a276ba113e0310b8b325b7dfac0afdb5dab"
 domain = "bark-slm.com"
 app_url = "api.bark-slm.com"
