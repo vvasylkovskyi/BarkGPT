@@ -15,6 +15,11 @@ Here are the previous reads:
 - [Building BarkGPT from scratch](./docs/01-building-from-scratch/README.md)
 - [Training BarkGPT on WebText‑2 dataset](./docs/02-training-on-webtext/README.md)
 
+## Demo
+
+- [Live Demo](https://www.bark-slm.com) - Try it yourself - this is Bark Agent
+- [Github Code is available in this repo in /app folder](https://github.com/vvasylkovskyi/BarkGPT/tree/main/app) - Check it out and run locally!
+
 ## Adding ChatBarkGPT
 
 So we have our language model surfaced behind an API: `/generate`. We can invoke it with our prompt, and get the message generated back. Why do we need to work more and add langchain for the production AI systems? Let's find out while building.
