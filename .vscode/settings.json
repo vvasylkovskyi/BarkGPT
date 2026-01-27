@@ -1,0 +1,33 @@
+{
+  /* ---- Python ---- */
+  "[python]": {
+    // -- Ruff
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  // -- Extra paths
+  "python.autoComplete.extraPaths": ["${workspaceFolder}/app"],
+  // -- Pytest
+  "python.testing.pytestEnabled": true,
+  "python.testing.pytestArgs": [
+    "--color=yes",
+    "-vvv",
+    "-s",
+    "--no-cov",
+    "tests/"
+  ],
+  /* ---- TOML ---- */
+  "[toml]": {
+    "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  "evenBetterToml.formatter.alignComments": true,
+  "evenBetterToml.formatter.alignEntries": true,
+  "evenBetterToml.formatter.allowedBlankLines": 2,
+  "evenBetterToml.formatter.arrayAutoCollapse": true,
+  "evenBetterToml.formatter.columnWidth": 120,
+  "evenBetterToml.formatter.indentString": "  ",
+  "evenBetterToml.formatter.reorderArrays": true,
+  "evenBetterToml.formatter.reorderKeys": true,
+  "evenBetterToml.formatter.trailingNewline": true,
+  "python.languageServer": "Pylance",
+  "python.analysis.extraPaths": ["./apps/shared"]
+}

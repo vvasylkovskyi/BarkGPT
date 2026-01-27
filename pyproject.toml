@@ -1,59 +1,73 @@
 [project]
-name = "bark-gpt"
-version = "0.0.1"
-description = "A most simple LLM that barks and responds to user commands."
-readme = "README.md"
-authors = [
-  { name = "Viktor Vasylkovskyi", email = "viktor.vasylkovskyi@gmail.com" }
-]
-maintainers = [
-  { name = "Viktor Vasylkovskyi", email = "viktor.vasylkovskyi@gmail.com" }
-]
-license = { text = "MIT" }  # adjust if different
+authors         = [{ name = "Viktor Vasylkovskyi", email = "viktor.vasylkovskyi@gmail.com" }]
+description     = "A most simple LLM that barks and responds to user commands."
+license         = { text = "MIT" }                                                            # adjust if different
+maintainers     = [{ name = "Viktor Vasylkovskyi", email = "viktor.vasylkovskyi@gmail.com" }]
+name            = "bark-gpt"
+readme          = "README.md"
 requires-python = ">=3.12"
+version         = "0.0.1"
 
 dependencies = [
-    "torch>=2.9.1",
-    "fastapi>=0.124.4",
-    "uvicorn>=0.38.0",
-    "transformers>=4.57.3",
-    "datasets>=4.5.0",
+  "datasets>=4.5.0",
+  "fastapi>=0.124.4",
+  "langchain>=1.2.7",
+  "langgraph>=1.0.7",
+  "pydantic (>=2.11.1,<3.0.0)",
+  "pydantic-settings (>=2.8.1,<3.0.0)",
+  "torch>=2.9.1",
+  "transformers>=4.57.3",
+  "uvicorn>=0.38.0",
 ]
 
 [project.urls]
-Homepage = "https://github.com/vvasylkovskyi/bark-gpt"
+Homepage   = "https://github.com/vvasylkovskyi/bark-gpt"
 Repository = "https://github.com/vvasylkovskyi/bark-gpt"
 
 [tool.poetry.group.dev.dependencies]
-dependencies = [
-  "pyright==1.1.374",
-  "ruff==0.5.5"
-]
+dependencies = ["pyright==1.1.374", "ruff==0.5.5"]
 
 [tool.ruff]
+exclude = [
+  ".bzr",
+  ".direnv",
+  ".eggs",
+  ".git",
+  ".hg",
+  ".mypy_cache",
+  ".nox",
+  ".pants.d",
+  ".pytype",
+  ".ruff_cache",
+  ".svn",
+  ".tox",
+  ".venv",
+  "__pypackages__",
+  "_build",
+  "buck-out",
+  "build",
+  "dist",
+  "node_modules",
+  "venv",
+]
 fix = true
 line-length = 120
 src = ["src", "tests"]
 target-version = "py311"
-exclude = [
-  ".bzr", ".direnv", ".eggs", ".git", ".hg", ".mypy_cache", ".nox", ".pants.d",
-  ".pytype", ".ruff_cache", ".svn", ".tox", ".venv", "__pypackages__", "_build",
-  "buck-out", "build", "dist", "node_modules", "venv"
-]
 
 [tool.ruff.format]
-indent-style = "space"
-line-ending = "lf"
-quote-style = "double"
+indent-style              = "space"
+line-ending               = "lf"
+quote-style               = "double"
 skip-magic-trailing-comma = true
 
 [tool.pyright]
-exclude = ["**/__pycache__"]
-ignore = []
-include = ["src"]
-strict = []
-venvPath = ".venv"
-reportMissingImports = true
-reportMissingTypeStubs = false
-reportUnknownParameterType = true
+exclude                        = ["**/__pycache__"]
+ignore                         = []
+include                        = ["src"]
+reportMissingImports           = true
+reportMissingTypeStubs         = false
+reportUnknownParameterType     = true
 reportUntypedFunctionDecorator = true
+strict                         = []
+venvPath                       = ".venv"

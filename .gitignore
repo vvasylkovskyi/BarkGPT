@@ -206,7 +206,7 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-./bark_model/**
+/local_model_checkpoints/*
 .terraform
 .env
 debug_dump
