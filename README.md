@@ -1,10 +1,8 @@
-# BarkGPT
+# BarkGPT - Tiny GPT implementation
 
 <div align="center">
   <img src="./og.png" alt="BarkGPT - The Smallest LLM" width="100%" height="500"/>
 </div>
-
-AI LLM Project that barks trained from scratch.
 
 This is a hands-on tutorial about how to use Large Language Models and in particular, train one from scratch. Our goal here, is to train an LLM from scratch, with very low vocabulary, only dog barking.
 
@@ -12,7 +10,7 @@ While there might not be many applications for such a model (unless you want to 
 
 This project is heavily inspired on [CatGPT](https://www.cat-gpt.com/), an AI that meows. I am a cat owner myself, although the market for meow AIs feels quite saturated with clear market dominance. I haven't seen any worthy dog GPTs, only mere amateur projects, so I think this project will just fit right in.
 
-## Demo 🚀
+## Demo - AI LLM Project that barks trained from scratch. 🚀
 
 Try demo at [BarkGPT](https://www.bark-slm.com/)
 
