@@ -4,16 +4,28 @@ from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 from local_datasets.load_dataset import dataset
 from transformers import AutoTokenizer
-
-
-from bark_gpt.model.model import BarkGPT
+import time
+from bark_gpt_2.ui.progress_bar import progress_bar
+from bark_gpt_2.model.model import BarkGPT
+from bark_gpt_2.parameters.parameters import training_parameters, model_config, device
 
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 tokenizer.pad_token = tokenizer.eos_token  # important
 vocab_size = tokenizer.vocab_size
 
-device = "cuda" if torch.cuda.is_available() else "cpu"
-block_size = 32
+### Training Parameters ###
+batch_size = training_parameters.batch_size
+# Gradient Accumulation
+accum_steps = training_parameters.accum_steps  # 64 x 32 = 2048 effective batch
+effective_batch = training_parameters.effective_batch
+
+
+lr_small = training_parameters.lr_small
+
+lr_scaled = training_parameters.lr_scaled
+epochs = training_parameters.epochs
+
+block_size = model_config.block_size
 
 
 def tokenize(batch):
@@ -30,7 +42,7 @@ tokenized_dataset = dataset.map(tokenize, batched=True, remove_columns=["text"])
 
 def collate_fn(batch):
     # batch is a list of dicts: [{"input_ids": [...]}, ...]
-    input_ids = [torch.tensor(item["input_ids"]) for item in batch]
+    input_ids = [torch.tensor(item["input_ids"], device=device) for item in batch]
     # pad sequences to the max length in this batch
     input_ids = pad_sequence(
         input_ids, batch_first=True, padding_value=tokenizer.pad_token_id
@@ -53,22 +65,28 @@ lm_dataset = tokenized_dataset.map(group_texts, batched=True)
 
 train_loader = DataLoader(
     lm_dataset,
-    batch_size=16,
+    batch_size=batch_size,
     shuffle=True,
     collate_fn=collate_fn,
 )
 
-model = BarkGPT(vocab_size=vocab_size, max_seq_len=block_size).to(device)
+model = BarkGPT(model_config).to(device)
 loss_fn = nn.CrossEntropyLoss()  # next-token prediction
-optimizer = torch.optim.AdamW(model.parameters(), lr=3e-4)
-
-epochs = 3
+optimizer = torch.optim.AdamW(model.parameters(), lr=training_parameters.lr_small)
 
 for epoch in range(epochs):
     total_loss = 0
-    for batch in train_loader:
+    start_time = time.time()
+    for step, batch in enumerate(train_loader):
+        # Minimal progress output
+        progress_bar(
+            step,
+            total=len(train_loader),
+            start_time=start_time,
+            prefix=f"Epoch {epoch+1}",
+        )
         # Convert to tensor
-        input_ids = torch.tensor(batch["input_ids"]).to(device)
+        input_ids = batch["input_ids"]
 
         # Next-token prediction
         inputs = input_ids[:, :-1]
@@ -93,8 +111,8 @@ for epoch in range(epochs):
 torch.save(
     {
         "model_state": model.state_dict(),
-        "vocab_size": vocab_size,
-        "max_seq_len": block_size,
+        "vocab_size": model_config.vocab_size,
+        "max_seq_len": model_config.block_size,
     },
     "bark_gpt_2_model.pt",
 )
