@@ -5,7 +5,7 @@ import torch
 
 from app.settings.app import AppSettings
 from bark_gpt.model.hf.bark_hf import BarkHF
-from bark_gpt.model.model import BarkGPT
+from bark_gpt.model.model import BarkGPT, GPTConfig
 from bark_gpt.model.hf.bark_hf import BarkConfig
 from bark_gpt.bark_text_generator.bark_text_generator import BarkTextGenerator
 
@@ -82,7 +82,16 @@ class AppContext:
         itos = checkpoint["itos"]
         vocab_size = checkpoint["vocab_size"]
 
-        bark = BarkGPT(vocab_size)
+        config = GPTConfig(
+            vocab_size=vocab_size,  # real BPE vocab
+            block_size=32,
+            n_layer=2,
+            n_head=8,
+            n_embd=8,
+        )
+
+        bark = BarkGPT(config)
+
         bark.load_state_dict(checkpoint["model_state"])
 
         config = BarkConfig(vocab_size=vocab_size)

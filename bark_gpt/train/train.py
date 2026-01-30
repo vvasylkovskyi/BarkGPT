@@ -2,12 +2,23 @@ import os
 import torch
 import torch.nn as nn
 from bark_gpt.train.prepare_dataset import prepare_dataset
-from bark_gpt.model.model import BarkGPT
+from bark_gpt.model.model import BarkGPT, GPTConfig
 
 dataset, dataset_ids, vocab_size, stoi, itos = prepare_dataset()
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
-model = BarkGPT(vocab_size, max_seq_len=max(len(seq) for seq in dataset_ids)).to(device)
+
+
+config = GPTConfig(
+    vocab_size=vocab_size,  # real BPE vocab
+    block_size=32,
+    n_layer=2,
+    n_head=8,
+    n_embd=8,
+)
+
+model = BarkGPT(config)
+
 
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 loss_fn = nn.CrossEntropyLoss()

@@ -7,11 +7,15 @@ from transformers import AutoTokenizer
 import time
 from bark_gpt_2.ui.progress_bar import progress_bar
 from bark_gpt_2.model.model import BarkGPT
-from bark_gpt_2.parameters.parameters import training_parameters, model_config, device
+from bark_gpt_2.parameters.parameters import (
+    training_parameters,
+    model_config,
+    device,
+    tokenized_dataset,
+)
 
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 tokenizer.pad_token = tokenizer.eos_token  # important
-vocab_size = tokenizer.vocab_size
 
 ### Training Parameters ###
 batch_size = training_parameters.batch_size
@@ -26,18 +30,6 @@ lr_scaled = training_parameters.lr_scaled
 epochs = training_parameters.epochs
 
 block_size = model_config.block_size
-
-
-def tokenize(batch):
-    return tokenizer(
-        batch["text"],
-        truncation=True,
-        max_length=256,
-        return_attention_mask=False,
-    )
-
-
-tokenized_dataset = dataset.map(tokenize, batched=True, remove_columns=["text"])
 
 
 def collate_fn(batch):
@@ -92,18 +84,25 @@ for epoch in range(epochs):
         inputs = input_ids[:, :-1]
         targets = input_ids[:, 1:]
 
-        # Forward
+        # -------------------------
+        # Forward & backward
+        # -------------------------
         logits = model(inputs)
-
-        # Compute loss
-        loss = loss_fn(logits.reshape(-1, vocab_size), targets.reshape(-1))
-
-        # Backward
-        optimizer.zero_grad()
+        loss = loss_fn(logits.reshape(-1, model_config.vocab_size), targets.reshape(-1))
+        loss = loss / accum_steps  # scale for accumulation
         loss.backward()
-        optimizer.step()
 
-        total_loss += loss.item()
+        # # Optional gradient clipping for stability
+        # torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
+        # -------------------------
+        # Step optimizer every accum_steps
+        # -------------------------
+        if (step + 1) % accum_steps == 0:
+            optimizer.step()
+            optimizer.zero_grad()
+
+        total_loss += loss.item() * accum_steps  # scale back for logging
 
     print(f"Epoch {epoch+1}, Loss: {total_loss/len(train_loader):.4f}")
 
