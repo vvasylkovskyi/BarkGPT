@@ -2,7 +2,10 @@ from dataclasses import dataclass
 import math
 import torch
 from transformers import AutoTokenizer
-from local_datasets.load_dataset import dataset
+from local_datasets.load_dataset_small import dataset
+from logger.logger import Logger
+
+logger = Logger("parameters")
 
 
 @dataclass
@@ -46,7 +49,7 @@ model_config = GPTConfig(
     n_embd=n_embd,
 )
 
-print(
+logger.info(
     f"model parameters: vocab_size={vocab_size}, block_size={block_size}, n_layer={n_layer}, n_head={n_head}, n_embd={n_embd}"
 )
 
@@ -68,17 +71,17 @@ training_parameters = TrainingParameters(
     epochs=epochs,
 )
 
-print(f"Training parameters: {training_parameters}")
+logger.info(f"Training parameters: {training_parameters}")
 
 generation_parameters = GenerationParameters(max_length=100, temperature=0.8, top_k=40)
-print(f"Generation parameters: {generation_parameters}")
+logger.info(f"Generation parameters: {generation_parameters}")
 
 device = (
     "mps"
     if torch.backends.mps.is_available()
     else "cuda" if torch.cuda.is_available() else "cpu"
 )
-print(f"Using device: {device}")
+logger.info(f"Using device: {device}")
 
 
 def tokenize(batch):
@@ -108,7 +111,7 @@ pos_emb_params = block_size * n_embd
 # Total
 model_params = transformer_params + token_emb_params + pos_emb_params
 
-print(f"Estimated model parameters: {model_params:,} (~{model_params/1e6:.2f}M)")
+logger.info(f"Estimated model parameters: {model_params:,} (~{model_params/1e6:.2f}M)")
 
 
 # -----------------------------
@@ -117,9 +120,9 @@ print(f"Estimated model parameters: {model_params:,} (~{model_params/1e6:.2f}M)"
 total_tokens = sum(len(x) for x in tokenized_dataset["input_ids"])
 avg_tokens_per_example = total_tokens / len(tokenized_dataset)
 
-print(f"Number of examples: {len(tokenized_dataset)}")
-print(f"Total tokens: {total_tokens}")
-print(f"Average tokens per example: {avg_tokens_per_example:.2f}")
+logger.info(f"Number of examples: {len(tokenized_dataset)}")
+logger.info(f"Total tokens: {total_tokens}")
+logger.info(f"Average tokens per example: {avg_tokens_per_example:.2f}")
 
 # -----------------------------
 # 5. Compute number of blocks
@@ -128,8 +131,8 @@ block_size = model_config.block_size
 num_blocks = total_tokens // block_size
 avg_tokens_per_block = block_size  # by design each block has block_size tokens
 
-print(f"Number of blocks (block_size={block_size}): {num_blocks}")
-print(f"Average tokens per block: {avg_tokens_per_block}")
+logger.info(f"Number of blocks (block_size={block_size}): {num_blocks}")
+logger.info(f"Average tokens per block: {avg_tokens_per_block}")
 
 # -----------------------------
 # 6. Compute steps per epoch
@@ -140,8 +143,8 @@ accum_steps = training_parameters.accum_steps  # gradient accumulation
 steps_per_epoch = math.ceil(num_blocks / batch_size / accum_steps)
 tokens_per_step = batch_size * block_size  # tokens seen per step
 
-print(f"Steps per epoch (with accumulation={accum_steps}): {steps_per_epoch}")
-print(f"Tokens per optimizer step: {tokens_per_step}")
+logger.info(f"Steps per epoch (with accumulation={accum_steps}): {steps_per_epoch}")
+logger.info(f"Tokens per optimizer step: {tokens_per_step}")
 
 # -----------------------------
 # 8. Chinchilla scaling check
@@ -150,26 +153,26 @@ tokens_needed = 20 * model_params
 min_epochs = math.ceil(tokens_needed / total_tokens)
 total_optimizer_steps = min_epochs * steps_per_epoch
 
-print(f"Chinchilla tokens required: {tokens_needed:,}")
-print(f"Minimum epochs to satisfy Chinchilla: {min_epochs}")
-print(f"Total optimizer steps to reach Chinchilla: {total_optimizer_steps}")
+logger.info(f"Chinchilla tokens required: {tokens_needed:,}")
+logger.info(f"Minimum epochs to satisfy Chinchilla: {min_epochs}")
+logger.info(f"Total optimizer steps to reach Chinchilla: {total_optimizer_steps}")
 
 
 # -----------------------------
 # 9. Safety warning
 # -----------------------------
 if total_tokens < tokens_needed:
-    print(
+    logger.warning(
         "⚠ WARNING: Your dataset is smaller than Chinchilla recommends for this model size."
     )
-    print("Consider training for more epochs or reducing model size.")
+    logger.warning("Consider training for more epochs or reducing model size.")
 else:
-    print("✅ Dataset size sufficient to satisfy Chinchilla rule in 1 epoch.")
+    logger.info("✅ Dataset size sufficient to satisfy Chinchilla rule in 1 epoch.")
 
 if epochs < min_epochs:
-    print(
+    logger.warning(
         f"Warning: Current epochs ({epochs}) is less than Chinchilla minimum ({min_epochs}). Consider increasing epochs."
     )
 else:
-    print("Chinchilla training requirement satisfied.")
+    logger.info("Chinchilla training requirement satisfied.")
 # -----------------------------

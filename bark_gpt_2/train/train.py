@@ -2,7 +2,6 @@ import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
-from local_datasets.load_dataset import dataset
 from transformers import AutoTokenizer
 import time
 from bark_gpt_2.ui.progress_bar import progress_bar
@@ -13,6 +12,10 @@ from bark_gpt_2.parameters.parameters import (
     device,
     tokenized_dataset,
 )
+
+from logger.logger import Logger
+
+logger = Logger("train")
 
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 tokenizer.pad_token = tokenizer.eos_token  # important
