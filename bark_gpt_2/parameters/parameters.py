@@ -1,9 +1,12 @@
 from dataclasses import dataclass
 import math
+import time
+from typing import Dict, List
 import torch
 from transformers import AutoTokenizer
-from local_datasets.load_dataset_small import dataset
+from local_datasets.load_dataset import dataset
 from logger.logger import Logger
+from bark_gpt_2.ui.progress_bar import progress_bar
 
 logger = Logger("parameters")
 
@@ -34,11 +37,11 @@ class GenerationParameters:
     top_k: int = 10
 
 
-tokenizer = AutoTokenizer.from_pretrained("bark_gpt_2_tokenizer")
+tokenizer = AutoTokenizer.from_pretrained("gpt2")
 block_size = 128
-n_layer = 6
+n_layer = 4
 n_head = 2
-n_embd = 256
+n_embd = 128
 vocab_size = tokenizer.vocab_size
 
 model_config = GPTConfig(
@@ -111,17 +114,41 @@ pos_emb_params = block_size * n_embd
 # Total
 model_params = transformer_params + token_emb_params + pos_emb_params
 
+logger.info(
+    f"Transformer parameters: {transformer_params:,} (~{transformer_params/1e6:.2f}M)"
+)
+logger.info(
+    f"Token embedding parameters: {token_emb_params:,} (~{token_emb_params/1e6:.2f}M)"
+)
+logger.info(
+    f"Positional embedding parameters: {pos_emb_params:,} (~{pos_emb_params/1e6:.2f}M)"
+)
 logger.info(f"Estimated model parameters: {model_params:,} (~{model_params/1e6:.2f}M)")
 
 
 # -----------------------------
 # 4. Count total tokens
 # -----------------------------
-total_tokens = sum(len(x) for x in tokenized_dataset["input_ids"])
-avg_tokens_per_example = total_tokens / len(tokenized_dataset)
+start_time = time.time()
+total_tokens = 0
+input_ids = tokenized_dataset["train"]["input_ids"]
+total = len(input_ids)
 
-logger.info(f"Number of examples: {len(tokenized_dataset)}")
-logger.info(f"Total tokens: {total_tokens}")
+for i, x in enumerate(input_ids):
+    total_tokens += len(x)
+    if i % 1000 == 0 or i + 1 == total:
+        progress_bar(
+            i,
+            total=total,
+            start_time=start_time,
+            prefix="Counting tokens",
+        )
+
+print(f"Total tokens: {total_tokens:,}")
+avg_tokens_per_example = total_tokens / len(tokenized_dataset["train"])
+
+logger.info(f"Number of examples: {len(tokenized_dataset['train']):,}")
+logger.info(f"Total tokens: {total_tokens:,}")
 logger.info(f"Average tokens per example: {avg_tokens_per_example:.2f}")
 
 # -----------------------------
@@ -131,8 +158,8 @@ block_size = model_config.block_size
 num_blocks = total_tokens // block_size
 avg_tokens_per_block = block_size  # by design each block has block_size tokens
 
-logger.info(f"Number of blocks (block_size={block_size}): {num_blocks}")
-logger.info(f"Average tokens per block: {avg_tokens_per_block}")
+logger.info(f"Number of blocks (block_size={block_size}): {num_blocks:,}")
+logger.info(f"Average tokens per block: {avg_tokens_per_block:,}")
 
 # -----------------------------
 # 6. Compute steps per epoch
@@ -143,8 +170,8 @@ accum_steps = training_parameters.accum_steps  # gradient accumulation
 steps_per_epoch = math.ceil(num_blocks / batch_size / accum_steps)
 tokens_per_step = batch_size * block_size  # tokens seen per step
 
-logger.info(f"Steps per epoch (with accumulation={accum_steps}): {steps_per_epoch}")
-logger.info(f"Tokens per optimizer step: {tokens_per_step}")
+logger.info(f"Steps per epoch (with accumulation={accum_steps}): {steps_per_epoch:,}")
+logger.info(f"Tokens per optimizer step: {tokens_per_step:,}")
 
 # -----------------------------
 # 8. Chinchilla scaling check
@@ -155,7 +182,7 @@ total_optimizer_steps = min_epochs * steps_per_epoch
 
 logger.info(f"Chinchilla tokens required: {tokens_needed:,}")
 logger.info(f"Minimum epochs to satisfy Chinchilla: {min_epochs}")
-logger.info(f"Total optimizer steps to reach Chinchilla: {total_optimizer_steps}")
+logger.info(f"Total optimizer steps to reach Chinchilla: {total_optimizer_steps:,}")
 
 
 # -----------------------------
