@@ -1,13 +1,14 @@
 import datetime
 
+
 class Logger:
     COLORS = {
-        "info": "\033[94m",    # bright blue
-        "success": "\033[92m", # bright green
-        "warning": "\033[93m", # yellow
-        "error": "\033[91m",   # bright red
-        "debug": "\033[90m",   # bright black (gray)
-        "reset": "\033[0m"     # reset
+        "info": "\033[94m",  # bright blue
+        "success": "\033[92m",  # bright green
+        "warning": "\033[93m",  # yellow
+        "error": "\033[91m",  # bright red
+        "debug": "\033[90m",  # bright black (gray)
+        "reset": "\033[0m",  # reset
     }
 
     def __init__(self, name: str = None):

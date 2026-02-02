@@ -1,4 +1,3 @@
-import sys
 from transformers import AutoTokenizer
 from bark_gpt_2.model.model import BarkGPT
 import torch
@@ -30,4 +29,4 @@ gen_tokens = hf_model.generate(
     max_length=generation_parameters.max_length,
 )
 gen_text = tokenizer.batch_decode(gen_tokens)[0]
-logger.info("Generated: %s", gen_text[len(prompt) :])
+logger.info(f"Generated: {gen_text[len(prompt) :]}")

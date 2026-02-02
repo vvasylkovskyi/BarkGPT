@@ -421,3 +421,173 @@ Estimating blocks and steps is essential to:
 2. Scale the learning rate correctly with gradient accumulation.
 3. Ensure the model sees enough tokens to satisfy Chinchilla and learn effectively.
 4. Without this, we risk undertraining or inefficient use of compute.
+
+## Training for a long time
+
+Some insights you can only get after you start practice. With Open Web Text 2, macbook spent 2 hours, and failed at the end of the run. In addition, according to the calculation, there are nearly 1 million optimizer steps, with 1-4 steps per second it is nearly a week of non stop training. What if the process fails again mid training?
+
+A good practice to circumvent the pains of failed training is frequent checkpointing. We have been doing checkpoint already, only 1, at the end of all training:
+
+```python
+torch.save(
+    {
+        "model_state": model.state_dict(),
+        "vocab_size": model_config.vocab_size,
+        "max_seq_len": model_config.block_size,
+    },
+    "bark_gpt_2_model.pt",
+)
+
+tokenizer.save_pretrained("bark_gpt_2_tokenizer")
+```
+
+There are few things we can do to improve our training crash safety:
+
+1. Save checkpoint of training at every `N` optimizer steps. For instance, every 500-2000 steps.
+2. Save tokenized dataset into cache to avoid mapping again in case of failure
+
+### Saving Checkpoing of training at every `N` steps
+
+First, we will define the save function
+
+```python
+import os
+import torch
+import torch.nn as nn
+
+CKPT_PATH = "checkpoints/barkgpt_ckpt.pt"
+os.makedirs("checkpoints", exist_ok=True)
+
+def save_checkpoint(
+    epoch: int, step_in_epoch: int, model: nn.Module, optimizer: torch.optim.Optimizer
+):
+    tmp = f"{CKPT_PATH}.tmp"
+    torch.save(
+        {
+            "epoch": epoch,
+            "step": step_in_epoch,
+            "global_step": global_step,
+            "model": model.state_dict(),
+            "optim": optimizer.state_dict(),
+        },
+        tmp,
+    )
+    os.replace(tmp, CKPT_PATH)
+```
+
+Note, above we are saving into temp folder first, to avoid crash mid-write. This is atomic write this way.
+
+Next, we going to add a load checkpoint before the training loop:
+
+```python
+start_epoch = 0
+global_step = 0
+start_step = 0
+
+## Resume from checkpoint if available
+if os.path.exists(CKPT_PATH):
+    ckpt = torch.load(CKPT_PATH, map_location=device)
+    model.load_state_dict(ckpt["model"])
+    optimizer.load_state_dict(ckpt["optim"])
+    start_epoch = ckpt["epoch"]
+    start_step = ckpt["step"]
+    global_step = ckpt["global_step"]
+    logger.info(f"Resumed from epoch {start_epoch}, step {global_step}")
+```
+
+And finally, we will modify our training loop slightly to start from `start_epoch` and save on every `x` iteration:
+
+```python
+for epoch in range(start_epoch, epochs):
+    total_loss = 0
+    start_time = time.time()
+
+    for step, batch in enumerate(train_loader):
+        # skip until we reach the saved step
+        if epoch == start_epoch and step < start_step:
+            continue
+
+        ...
+
+        loss.backward()
+
+        if (step + 1) % accum_steps == 0:
+            optimizer.step()
+            optimizer.zero_grad()
+
+            global_step += 1
+
+            if global_step % 2 == 0:
+                save_checkpoint(epoch, step, model, optimizer)
+
+```
+
+As a quick test I was able to store and resume from checkpoint:
+
+```sh
+2026-02-01 22:30:37 [INFO][train] Resumed from epoch 0, step 76
+Epoch 1:   6.23%|██--------------------------------------| 77/1236 [  1.1s< 16.8s,   68.82 it/s]2026-02-01 22:30:38 [INFO][train] Saving checkpoint at epoch 0, step_in_epoch 75, global_step 78
+```
+
+### Saving tokenized dataset into cache
+
+The next quick improvement is to cache the tokenized dataset. This is useful because on big datasets like Open Web Text 2, the tokenization of dataset might take hours. So this way we avoid waiting extra hours in case something goes wrong, and we can trully resume from the last point in time.
+
+All we need to do is write a small script to store the dataset on disk: `load_dataset_from_cache`:
+
+```python
+def load_dataset_from_cache():
+    CACHE_DIR = "cache/lm_dataset"
+
+    if os.path.exists(CACHE_DIR):
+        logger.success("Loading tokenized + grouped dataset from disk")
+        lm_dataset = load_from_disk(CACHE_DIR)
+
+    else:
+        logger.info("Building tokenized + grouped dataset (one-time)")
+        lm_dataset = tokenized_dataset.map(
+            group_texts,
+            batched=True,
+        )
+
+        lm_dataset.save_to_disk(CACHE_DIR)
+        logger.info("Dataset saved to disk")
+
+    return lm_dataset
+
+
+lm_dataset = load_dataset_from_cache()
+```
+
+`Dataset` object already has the `save_to_disk`, so it is literally only that. Next time, when we resume from our checkpoint, we can see that everything worked as a charm:
+
+```sh
+2026-02-01 22:40:44 [SUCCESS][train] Loading tokenized + grouped dataset from disk
+2026-02-01 22:40:44 [SUCCESS][train] Resumed from epoch 0, step 94
+Epoch 1:   7.52%|███-------------------------------------| 93/1236 [  0.9s< 10.7s,  107.01 it/s]
+```
+
+### Avoiding Loss exploding into NaN by early validation
+
+It might happen that the loss went unstable, logits become large and loss function computes `NaN` which means learning went wrong. To early catch such situation, we can compute loss at the checkpoint time and NaNs/infs are caught early so we can stop or debug before the model explodes.
+
+We can also add a running loss, where we can inspect the loss at each step
+
+```python
+def sanity_loss(model, loss_fn, sample_batch):
+    model.eval()  # disable dropout / training effects
+    with torch.no_grad():  # do NOT compute gradients
+        inputs = sample_batch[:, :-1]
+        targets = sample_batch[:, 1:]
+        logits = model(inputs)
+        loss = loss_fn(
+            logits.reshape(-1, model_config.vocab_size),
+            targets.reshape(-1)
+        ).item()
+    model.train()  # restore training mode
+    return loss
+
+if global_step % checkpoint_interval == 0:
+    ckpt_loss = sanity_loss(model, loss_fn, input_ids)  # small batch
+    logger.info(f"Checkpoint at step {global_step}: sanity loss={ckpt_loss:.4f}")
+```

@@ -1,12 +1,16 @@
 from dataclasses import dataclass
+import json
 import math
+import os
 import time
-from typing import Dict, List
+from typing import Any, Dict, cast
 import torch
 from transformers import AutoTokenizer
-from local_datasets.load_dataset import dataset
+from local_datasets.load_dataset_small import dataset
 from logger.logger import Logger
 from bark_gpt_2.ui.progress_bar import progress_bar
+from datasets import DatasetDict
+from datasets import load_from_disk
 
 logger = Logger("parameters")
 
@@ -28,6 +32,7 @@ class TrainingParameters:
     lr_small: float = 3e-4
     lr_scaled: float = lr_small * (effective_batch / batch_size)
     epochs: int = 3
+    checkpoint_interval: int = 1000  # Save checkpoint every N steps
 
 
 @dataclass
@@ -37,11 +42,41 @@ class GenerationParameters:
     top_k: int = 10
 
 
+def safe_get_dataset_split(ds: DatasetDict, split_name: str):
+    """Safe access: check if dataset has splits or use it directly"""
+    if hasattr(ds, "keys") and split_name in ds.keys():
+        return ds[split_name]
+    return ds
+
+
+def get_total_tokens():
+    """Count total tokens in the dataset"""
+    META_PATH = "cache/lm_dataset_meta/meta.json"
+    total_tokens = 0
+    if os.path.exists(META_PATH):
+        with open(META_PATH) as f:
+            total_tokens = json.load(f)["total_tokens"]
+    else:
+        for i, x in enumerate(input_ids):
+            total_tokens += len(x)
+            if i % 1000 == 0 or i + 1 == total:
+                progress_bar(
+                    i,
+                    total=total,
+                    start_time=start_time,
+                    prefix="Counting tokens",
+                )
+        os.makedirs(os.path.dirname(META_PATH), exist_ok=True)
+        with open(META_PATH, "w") as f:
+            json.dump({"total_tokens": total_tokens}, f)
+    return total_tokens
+
+
 tokenizer = AutoTokenizer.from_pretrained("gpt2")
 block_size = 128
 n_layer = 4
 n_head = 2
-n_embd = 128
+n_embd = 256
 vocab_size = tokenizer.vocab_size
 
 model_config = GPTConfig(
@@ -59,11 +94,12 @@ logger.info(
 batch_size = 16
 accum_steps = 1
 effective_batch = batch_size * accum_steps  # 64 x 32 = 2048 effective batch
-lr_small = 3e-4  # Original learning rate for batch_size=16
+lr_small = 1e-4  # Original learning rate for batch_size=16
 lr_scaled = lr_small * (
     effective_batch / batch_size
 )  # Scale LR linearly with effective batch
-epochs = 2
+epochs = 1
+checkpoint_interval = 500  # Save checkpoint every N steps
 
 training_parameters = TrainingParameters(
     batch_size=batch_size,
@@ -72,6 +108,7 @@ training_parameters = TrainingParameters(
     lr_small=lr_small,
     lr_scaled=lr_scaled,
     epochs=epochs,
+    checkpoint_interval=checkpoint_interval,
 )
 
 logger.info(f"Training parameters: {training_parameters}")
@@ -87,7 +124,14 @@ device = (
 logger.info(f"Using device: {device}")
 
 
-def tokenize(batch):
+def tokenize(batch: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Tokenize a batch of examples.
+    Args:
+        batch: A dictionary with keys like 'text'.
+    Returns:
+        A dictionary with tokenized outputs, e.g., {'input_ids': [...]}
+    """
     return tokenizer(
         batch["text"],
         truncation=True,
@@ -96,8 +140,32 @@ def tokenize(batch):
     )
 
 
-tokenized_dataset = dataset.map(tokenize, batched=True, remove_columns=["text"])
+def load_tokenized_dataset_from_cache() -> DatasetDict:
+    """
+    Load the tokenized dataset from disk cache if available.
+    Otherwise, tokenize and save to disk.
 
+    Returns:
+        tokenized_dataset: HuggingFace Dataset object
+    """
+    TOKENIZED_CACHE = "cache/tokenized_dataset"
+
+    if os.path.exists(TOKENIZED_CACHE):
+        tokenized_dataset: DatasetDict = cast(
+            DatasetDict, load_from_disk(TOKENIZED_CACHE)
+        )
+        logger.success("Loaded tokenized dataset from disk cache")
+    else:
+        tokenized_dataset: DatasetDict = dataset.map(
+            tokenize, batched=True, remove_columns=["text"]
+        )
+        tokenized_dataset.save_to_disk(TOKENIZED_CACHE)
+        logger.info("Tokenized dataset saved to disk cache")
+
+    return tokenized_dataset
+
+
+tokenized_dataset: DatasetDict = load_tokenized_dataset_from_cache()
 # -----------------------------
 # 3. Model parameters
 # -----------------------------
@@ -131,23 +199,19 @@ logger.info(f"Estimated model parameters: {model_params:,} (~{model_params/1e6:.
 # -----------------------------
 start_time = time.time()
 total_tokens = 0
-input_ids = tokenized_dataset["train"]["input_ids"]
+
+input_ids = safe_get_dataset_split(tokenized_dataset, "train")["input_ids"]
 total = len(input_ids)
+total_tokens = get_total_tokens()
 
-for i, x in enumerate(input_ids):
-    total_tokens += len(x)
-    if i % 1000 == 0 or i + 1 == total:
-        progress_bar(
-            i,
-            total=total,
-            start_time=start_time,
-            prefix="Counting tokens",
-        )
+logger.info(f"Total tokens: {total_tokens:,}")
+avg_tokens_per_example = total_tokens / len(
+    safe_get_dataset_split(tokenized_dataset, "train")
+)
 
-print(f"Total tokens: {total_tokens:,}")
-avg_tokens_per_example = total_tokens / len(tokenized_dataset["train"])
-
-logger.info(f"Number of examples: {len(tokenized_dataset['train']):,}")
+logger.info(
+    f"Number of examples: {len(safe_get_dataset_split(tokenized_dataset, 'train')):,}"
+)
 logger.info(f"Total tokens: {total_tokens:,}")
 logger.info(f"Average tokens per example: {avg_tokens_per_example:.2f}")
 
