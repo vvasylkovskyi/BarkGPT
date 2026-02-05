@@ -220,3 +220,4 @@ bark_gpt_2_model/**
 bark_gpt_2_tokenizer/**
 cache/**
 checkpoints/**
+outputs/**

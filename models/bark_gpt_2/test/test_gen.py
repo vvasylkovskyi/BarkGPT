@@ -1,14 +1,23 @@
 from transformers import AutoTokenizer
-from bark_gpt_2.model.model import BarkGPT
-import torch
-from bark_gpt_2.model.hf.bark_hf import BarkHF, BarkConfig
-from bark_gpt_2.parameters.parameters import model_config, device, generation_parameters
+from models.bark_gpt_2.model.model import BarkGPT
+from models.bark_gpt_2.model.hf.bark_hf import BarkHF, BarkConfig
+from models.bark_gpt_2.parameters.parameters import (
+    model_config,
+    device,
+    generation_parameters,
+)
 from logger.logger import Logger
+from models.bark_gpt_2.model_checkpoint_manager.model_checkpoints_manager import (
+    ModelCheckpointsManager,
+)
 
 logger = Logger("test_gen")
 
 
-ckpt = torch.load("bark_gpt_2_model.pt", map_location=device)
+model_checkpoints_manager = ModelCheckpointsManager(
+    device, model_config, checkpoint_interval=1000
+)
+ckpt = model_checkpoints_manager.load_final_model_weights()
 tokenizer = AutoTokenizer.from_pretrained("bark_gpt_2_tokenizer")
 
 model = BarkGPT(model_config).to(device)
