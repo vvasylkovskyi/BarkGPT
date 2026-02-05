@@ -1,4 +1,4 @@
-# Running Local SLM
+# Deploying SLM
 
 It is 2025 and the AI is booming. So far, large enterprises are all mostly using the Large Language Models of Claude/OpenAI via Cloud Providers to run the inference. This approach works great as a state of the art, but has few known disadvantages:
 

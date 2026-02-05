@@ -41,3 +41,11 @@ This is essentially a miniature version of how real LLM systems are shipped.
 ### ☁️ [Deploying Small Language Models on AWS](./docs/04-deploying-small-language-models/README.md)
 
 In this part, we will examine how to get the ready language model and deploy it on AWS. For demonstration purposes, an actual small language model was used: [Qwen](https://huggingface.co/Qwen/Qwen2-0.5B-Instruct-GGUF). We will see how to work with `Gguf` files and package them reliably to serve the inferrence. As an extra mile, we will try to apply the same engineering approach to deploy our improved BarkGPT using improved compression with Gguf.
+
+### [Improving Training Time](./docs/05-faster-training-time/README.md)
+
+Even tiny BarkGPT can take a while to train. By moving to Mac MPS, tuning batch size, using gradient accumulation, and scaling the learning rate, epoch time dropped from ~250s to ~80s while keeping loss decreasing. Faster experiments, same learning—small tweaks, big difference!
+
+### [Understanding BarkGPT model and Making it Smarter](./docs/06-deep-dive-into-llm/README.md)
+
+A deep dive into BarkGPT’s internals. We break down embeddings, transformer layers, attention heads, and the forward pass, then show how to make the model smarter by tuning configuration - not rewriting code. This is where BarkGPT goes from "working" to "well-designed."

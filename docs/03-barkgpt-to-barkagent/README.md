@@ -1,6 +1,4 @@
-# BarkGPT Agent Stack
-
-## Building AI Agents From Scratch
+# Building AI Agents From Scratch
 
 AI Agents are everywhere now. GitHub Copilot edits your code, Perplexity researches topics for you, and every SaaS company is slapping "AI Agent" on their landing page. But here's the thing: most tutorials start with `pip install openai` and call it a day. That's fine if you just want to ship something. But what if you want to understand how it actually works? Like, all the way down to the neural network? Most tutorials skip the first three layers and just hand you an API key. Which is fine for shipping fast.
 

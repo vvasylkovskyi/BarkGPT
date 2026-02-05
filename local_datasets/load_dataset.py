@@ -1,10 +1,9 @@
-import os
+from datasets import load_dataset
+from logger.logger import Logger
 
-with open(os.environ["DATASET_PATH"], "r", encoding="utf-8") as f:
-    texts = f.readlines()
+logger = Logger("dataset_loader")
 
-# Wrap as HF-style dataset
-from datasets import Dataset
+dataset = load_dataset("Skylion007/openwebtext")
 
-dataset = Dataset.from_dict({"text": [t.strip() for t in texts if t.strip()]})
-print(f"Number of examples: {len(dataset)}")
+logger.info(f"Dataset loaded with {len(dataset['train'])} training examples.")
+logger.info(f"Dataset Keys: {dataset.keys()}")
