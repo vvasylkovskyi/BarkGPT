@@ -82,3 +82,7 @@ train_bark_gpt_2:
 test_bark_gpt_2:
 	@echo "Testing BarkGPT 2 model..."
 	uv run python -m models.bark_gpt_2.test.test_gen
+
+run_mistral:
+	@echo "Running Mistral model..."
+	uv run python -m models.mistral_3b.main
