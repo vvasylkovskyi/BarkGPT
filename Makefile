@@ -77,8 +77,8 @@ load_datasets:
 
 train_bark_gpt_2:
 	@echo "Training BarkGPT 2 model..."
-	uv run python -m bark_gpt_2.train.train
+	uv run python -m models.bark_gpt_2.train.train
 
 test_bark_gpt_2:
 	@echo "Testing BarkGPT 2 model..."
-	uv run python -m bark_gpt_2.test.test_gen
+	uv run python -m models.bark_gpt_2.test.test_gen
