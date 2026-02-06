@@ -591,3 +591,26 @@ if global_step % checkpoint_interval == 0:
     ckpt_loss = sanity_loss(model, loss_fn, input_ids)  # small batch
     logger.info(f"Checkpoint at step {global_step}: sanity loss={ckpt_loss:.4f}")
 ```
+
+## After Training Result
+
+After training my model for 5 days with 1 epoch I got the following output:
+
+```sh
+2026-02-06 13:40:23 [SUCCESS][TrainingManager] Epoch 1, Loss: 10.9859
+2026-02-06 13:40:23 [INFO][ModelCheckpointsManager] Saving checkpoint at epoch 1, step_in_epoch 0, global_step 1
+2026-02-06 13:40:24 [SUCCESS][train] Training complete.
+
+# Generation
+2026-02-06 13:38:17 [INFO][test_gen] Generated:  has been a new ‘the house.
+The video on the United States of the next week, and other, the time for a two dozen at the country's 'myster that is a good for the first, the country, it was one, which also is one of the second year. The city in the world-state, which have a new information regarding it would be a very high-year-time in the city, and his team is not for it is
+```
+
+This is way better than before:
+
+```sh
+prompt = "the Jewish population"
+Generated:  of the world's first time, and the United States, and the world's first presidency, and the world's first time, and the world's first term "The first term, and the world's first time, the United States, and the first-s, and the universe is a "a, the first-4] The New York Times, the world's first "The first-based learning is a "The first time, and the world's first-4]
+```
+
+Notably, there is no repetition collapse .
