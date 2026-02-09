@@ -31,20 +31,10 @@ So how to convert our model into GGuf, optimized for inference? [According to th
 5. Finally, convert the model by running the script:
 
 ```sh
-# python llama.cpp/convert_hf_to_gguf.py \
-#   outputs/mistral-3b-base/models--mistralai--Ministral-3-3B-Base-2512/snapshots/6f9c4b12a95b139af68670a6713616b757923735 \
-#   --outfile ./outputs/gguf/mistral-3b-base-f32-v1.gguf \
-#   --outtype f32
-
-# python llama.cpp/convert_hf_to_gguf.py \
-#     ./outputs/mistral-7b-v0.3/models--mistralai--Mistral-7B-v0.3/snapshots/caa1feb0e54d415e2df31207e5f4e273e33509b1 \
-#     --outfile ./outputs/gguf/mistral-7b-base-f32-v1.gguf \
-#     --outtype f32
-
 python llama.cpp/convert_hf_to_gguf.py \
     ./outputs/mistral-7b-v0.3/models--mistralai--Mistral-7B-v0.3/snapshots/caa1feb0e54d415e2df31207e5f4e273e33509b1 \
-    --outfile ./outputs/gguf/mistral-7b-base-f16-v1.gguf \
-    --outtype f16
+    --outfile ./outputs/gguf/mistral-7b-base-q8_0-v1.gguf \
+    --outtype q8_0
 ```
 
 You might notice that we have to indicate the exact snapshot folder. You should look-up for the exact folder name.
