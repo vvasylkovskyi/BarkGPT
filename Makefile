@@ -83,6 +83,14 @@ test_bark_gpt_2:
 	@echo "Testing BarkGPT 2 model..."
 	uv run python -m models.bark_gpt_2.test.test_gen
 
-run_mistral:
+mistral_to_gguf:
+	@echo "Converting Mistral model to GGUF format..."
+	python llama.cpp/convert_hf_to_gguf.py \
+    ./outputs/mistral-7b-v0.3/models--mistralai--Mistral-7B-v0.3/snapshots/caa1feb0e54d415e2df31207e5f4e273e33509b1 \
+    --outfile ./outputs/gguf/mistral-7b-base-q8_0-v1.gguf \
+    --outtype q8_0
+
+run_mistral_llama_cpp:
 	@echo "Running Mistral model..."
-	uv run python -m models.mistral_3b.main
+	uv run python -m models.mistral_3b.llama_cpp_test
+

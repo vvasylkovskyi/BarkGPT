@@ -221,3 +221,5 @@ bark_gpt_2_tokenizer/**
 cache/**
 checkpoints/**
 outputs/**
+llama.cpp/**
+vllm/**
