@@ -86,3 +86,7 @@ test_bark_gpt_2:
 run_mistral:
 	@echo "Running Mistral model..."
 	uv run python -m models.mistral_3b.main
+
+run_vllm_mistral:
+	@echo "Running Mistral model with vLLM..."
+	uv run uvicorn models.mistral_3b.main:app --host 0.0.0.0 --port 80 --reload

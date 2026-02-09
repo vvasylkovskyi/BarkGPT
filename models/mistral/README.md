@@ -5,6 +5,10 @@ For academical purposes using small language model such as Mistral 3B is the fol
 - Compare the smallest Mistral 3B with our 0.8M model
 - Use Mistral architecture for gguf conversion for efficient inferrence
 
+## Edit
+
+Initially we tried to use `mistral3` architecture which are smaller variants, but they turned out to be too new for this experiment, and converting to `gguf` succeeded, however `llama-cpp-python` did not have support. So we moved to https://huggingface.co/mistralai/Mistral-7B-v0.3/tree/main that uses `mistral` architecture.
+
 ## Let's get started
 
 First, I am going to set the stage and download the Mistral 3B model. We are curious about the base model here, so some assumptions worth bringing forward:
