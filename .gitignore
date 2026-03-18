@@ -223,3 +223,5 @@ checkpoints/**
 outputs/**
 llama.cpp/**
 vllm/**
+data/**
+local_datasets/oasst1/**

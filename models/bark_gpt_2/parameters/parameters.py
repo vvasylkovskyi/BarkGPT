@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 import torch
-from local_datasets.load_dataset_small import dataset
+from local_datasets.load_dataset import dataset
 from logger.logger import Logger
 from models.bark_gpt_2.tokenization_manager.tokenization_manager import (
     TokenizationManager,

@@ -6,7 +6,16 @@ from models.bark_gpt_2.parameters.parameters import GPTConfig
 class GPTBlock(nn.Module):
     def __init__(self, n_embd: int, n_head: int, ff_mult=4, dropout=0.0):
         super().__init__()
-        self.attn = nn.MultiheadAttention(n_embd, n_head, batch_first=True)
+        self.n_embd = n_embd
+        self.n_head = n_head
+        self.head_dim = n_embd // n_head
+
+        # Separate Q, K, V projections for LoRA compatibility
+        self.q_proj = nn.Linear(n_embd, n_embd)
+        self.k_proj = nn.Linear(n_embd, n_embd)
+        self.v_proj = nn.Linear(n_embd, n_embd)
+        self.o_proj = nn.Linear(n_embd, n_embd)
+
         self.ln1 = nn.LayerNorm(n_embd)
         self.ln2 = nn.LayerNorm(n_embd)
         self.ff = nn.Sequential(
@@ -17,12 +26,29 @@ class GPTBlock(nn.Module):
 
     def forward(self, x: torch.Tensor):
         B, T, C = x.shape
-        mask = torch.triu(torch.ones(T, T, device=x.device), diagonal=1).bool()
+
+        # Self-attention with causal mask
         x_res = x
         x = self.ln1(x)
-        x, _ = self.attn(x, x, x, attn_mask=mask)
-        x = x + x_res
 
+        # Project to Q, K, V
+        q = self.q_proj(x).view(B, T, self.n_head, self.head_dim).transpose(1, 2)  # (B, n_head, T, head_dim)
+        k = self.k_proj(x).view(B, T, self.n_head, self.head_dim).transpose(1, 2)
+        v = self.v_proj(x).view(B, T, self.n_head, self.head_dim).transpose(1, 2)
+
+        # Scaled dot-product attention with causal mask
+        attn = (q @ k.transpose(-2, -1)) / (self.head_dim ** 0.5)
+        mask = torch.triu(torch.ones(T, T, device=x.device), diagonal=1).bool()
+        attn = attn.masked_fill(mask, float('-inf'))
+        attn = torch.softmax(attn, dim=-1)
+
+        # Apply attention to values
+        out = attn @ v  # (B, n_head, T, head_dim)
+        out = out.transpose(1, 2).contiguous().view(B, T, C)  # (B, T, C)
+        out = self.o_proj(out)
+        x = x_res + out
+
+        # Feed-forward
         x_res = x
         x = self.ln2(x)
         x = self.ff(x)

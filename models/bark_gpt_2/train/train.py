@@ -3,7 +3,7 @@ from models.bark_gpt_2.parameters.parameters import (
     model_config,
     device,
 )
-from local_datasets.load_dataset_small import dataset
+from local_datasets.load_dataset import dataset
 
 from models.bark_gpt_2.tokenization_manager.tokenization_manager import (
     TokenizationManager,

@@ -247,6 +247,36 @@ torch.save(
 tokenizer.save_pretrained("bark_gpt_2_tokenizer")
 ```
 
+### Why Cross-Entropy Loss?
+
+The line `loss_fn = nn.CrossEntropyLoss()` deserves a closer look, because this is the same loss function used by every production language model, including GPT-2, LLaMA, and EuroLLM.
+
+The model's job at each position is to predict the next token. After the forward pass, logits is a matrix of shape `[batch * seq_len, vocab_size]` — one row of raw scores per token position. Cross-entropy turns those scores into a single number that measures how wrong the model was.
+
+The formula at each position is:
+
+```sh
+L = −log P(correct token) # probability
+# ex. loss: -log(1) = 0 vs -log(0) ~+inf
+# The higher probability, the lower loss
+```
+
+PyTorch's `nn.CrossEntropyLoss` applies `log_softmax` to the logits (converting raw scores into a log-probability distribution), then picks out the log-probability assigned to the actual next token and negates it. When the model is confident and correct — high probability on the right token — the loss approaches zero. When it's wrong or uncertain, the loss grows sharply.
+
+That is why in the training loop we shift the inputs by one position:
+
+```sh
+inputs  = input_ids[:, :-1]   # tokens 0 … N-1  (the context)
+targets = input_ids[:, 1:]    # tokens 1 … N    (what comes next)
+
+# ex. "the cat sat on"
+# inputs  = [4, 17, 83]     # "the cat sat"
+# targets = [17, 83, 61]    # "cat sat on"
+```
+
+Every token in `inputs` is a question: given everything up to here, what is next? Every token in `targets` is the answer. The loss averages the penalty across all positions and all examples in the batch, and the optimizer uses that signal to nudge the model toward higher probability on the right answers.
+This is called next-token prediction or the autoregressive language modelling objective, and it is the core training signal behind essentially every large language model in existence.
+
 ### Testing the model
 
 So now we can load our model and run a prompt and see what it produces. Essentially, we are going to do the same testing script as in the original `BarkGPT`, with a few adjustments since now have a full blown Tokenizer.

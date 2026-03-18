@@ -27,7 +27,7 @@ model.load_state_dict(ckpt["model_state"])
 config = BarkConfig(vocab_size=ckpt["vocab_size"])
 hf_model = BarkHF(config, model)
 
-prompt = "the Jewish population"
+prompt = "The capital of France is"
 input_ids = tokenizer(prompt, return_tensors="pt").input_ids.to(device)
 
 gen_tokens = hf_model.generate(

@@ -7,10 +7,14 @@ META_TOKENIZED_CACHE = (
     f"{os.environ['DATASETS_CACHE_PATH']}/{MODEL_NAME}/lm_dataset_meta/meta.json"
 )
 
-CKPT_PATH = f"{os.path.join(os.environ['MODEL_CHECKPOINTS_PATH'], MODEL_NAME)}"
+CKPT_PATH = f"{os.environ['MODEL_CHECKPOINTS_PATH']}/{MODEL_NAME}"
 CACHE_DIR = f"{os.environ['DATASETS_CACHE_PATH']}/{MODEL_NAME}/lm_dataset"
 MODEL_PATH = f"{os.environ['MODEL_PATH']}/{MODEL_NAME}_model.pt"
 TOKENIZER_PATH = f"{os.environ['MODEL_TOKENIZER_PATH']}/{MODEL_NAME}_tokenizer"
+
+BARK_GPT_2_PATH_IN_HUGGING_FACES_REPO = f"{MODEL_NAME}_model.pt"
+HUGGING_FACES_REPO = "vvasylkovskyi/barkgpt"
+
 
 os.makedirs(os.environ["MODEL_CHECKPOINTS_PATH"], exist_ok=True)
 os.makedirs(os.environ["MODEL_PATH"], exist_ok=True)
