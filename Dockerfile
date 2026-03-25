@@ -7,9 +7,12 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy pyproject.toml and install dependencies
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+# Copy pyproject.toml and install dependencies with uv
 COPY pyproject.toml ./
-RUN pip install --no-cache-dir -e . --extra-index-url https://download.pytorch.org/whl/cpu
+RUN uv pip install --system --no-cache -e . --extra-index-url https://download.pytorch.org/whl/cpu
 
 RUN mkdir -p /models
 
