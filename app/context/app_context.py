@@ -4,10 +4,10 @@ from typing import Optional
 import torch
 
 from app.settings.app import AppSettings
-from bark_gpt.model.hf.bark_hf import BarkHF
-from bark_gpt.model.model import BarkGPT, GPTConfig
-from bark_gpt.model.hf.bark_hf import BarkConfig
-from bark_gpt.bark_text_generator.bark_text_generator import BarkTextGenerator
+from models.bark_gpt.model.hf.bark_hf import BarkHF
+from models.bark_gpt.model.model import BarkGPT, GPTConfig
+from models.bark_gpt.model.hf.bark_hf import BarkConfig
+from models.bark_gpt.bark_text_generator.bark_text_generator import BarkTextGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +27,10 @@ class AppContext:
             app_settings: Application settings containing Redis configuration
         """
         self._app_settings = app_settings
-        stoi, itos, hf_model = self.load_bark_gpt_model()
-        self.stoi = stoi
-        self.itos = itos
-        self.hf_model = hf_model
+        # stoi, itos, hf_model = self.load_bark_gpt_model()
+        # self.stoi = stoi
+        # self.itos = itos
+        # self.hf_model = hf_model
 
     @classmethod
     def initialize(cls, app_settings: AppSettings) -> "AppContext":
@@ -60,15 +60,15 @@ class AppContext:
             raise RuntimeError("AppContext has not been initialized")
         return cls._instance
 
-    def get_bark_generator(self) -> BarkTextGenerator:
-        stoi, itos, hf_model = self.get_bark_gpt_model()
-        self._bark_generator: BarkTextGenerator = BarkTextGenerator(
-            hf_model=hf_model,
-            stoi=stoi,
-            itos=itos,
-            device="cuda" if torch.cuda.is_available() else "cpu",
-        )
-        return self._bark_generator
+    # def get_bark_generator(self) -> BarkTextGenerator:
+    #     stoi, itos, hf_model = self.get_bark_gpt_model()
+    #     self._bark_generator: BarkTextGenerator = BarkTextGenerator(
+    #         hf_model=hf_model,
+    #         stoi=stoi,
+    #         itos=itos,
+    #         device="cuda" if torch.cuda.is_available() else "cpu",
+    #     )
+    #     return self._bark_generator
 
     def load_bark_gpt_model(self):
         """Load and return the BarkGPT model.
@@ -99,10 +99,10 @@ class AppContext:
 
         return stoi, itos, hf_model
 
-    def get_bark_gpt_model(self):
-        """Get the BarkGPT model.
+    # def get_bark_gpt_model(self):
+    #     """Get the BarkGPT model.
 
-        Returns:
-            The BarkGPT model
-        """
-        return self.stoi, self.itos, self.hf_model
+    #     Returns:
+    #         The BarkGPT model
+    #     """
+    #     return self.stoi, self.itos, self.hf_model

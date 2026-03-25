@@ -9,10 +9,10 @@ META_TOKENIZED_CACHE = (
 
 CKPT_PATH = f"{os.path.join(os.environ['MODEL_CHECKPOINTS_PATH'], MODEL_NAME)}"
 CACHE_DIR = f"{os.environ['DATASETS_CACHE_PATH']}/{MODEL_NAME}/lm_dataset"
-MODEL_PATH = f"{os.environ['MODEL_PATH']}/{MODEL_NAME}_model.pt"
+MODEL_PATH = os.environ['MODEL_PATH']  # Already includes full path with filename
 TOKENIZER_PATH = f"{os.environ['MODEL_TOKENIZER_PATH']}/{MODEL_NAME}_tokenizer"
 
 os.makedirs(os.environ["MODEL_CHECKPOINTS_PATH"], exist_ok=True)
-os.makedirs(os.environ["MODEL_PATH"], exist_ok=True)
+os.makedirs(os.path.dirname(MODEL_PATH), exist_ok=True)
 os.makedirs(os.environ["MODEL_TOKENIZER_PATH"], exist_ok=True)
 os.makedirs(os.environ["DATASETS_CACHE_PATH"], exist_ok=True)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Sequence, cast
 import torch
-from bark_gpt.model.hf.bark_hf import BarkHF
+from models.bark_gpt.model.hf.bark_hf import BarkHF
 
 
 @dataclass(frozen=True)
