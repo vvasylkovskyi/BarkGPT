@@ -12,7 +12,9 @@ COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 # Copy pyproject.toml and install dependencies with uv
 COPY pyproject.toml ./
-RUN uv pip install --system --no-cache -e . --extra-index-url https://download.pytorch.org/whl/cpu
+
+# Install dependencies with uv, using unsafe-best-match to handle PyTorch CPU index
+RUN uv pip install --system --no-cache --index-strategy unsafe-best-match . --extra-index-url https://download.pytorch.org/whl/cpu
 
 RUN mkdir -p /models
 
@@ -21,6 +23,7 @@ RUN curl -L -o /models/bark_model.pt \
 
 ENV MODEL_PATH=/models/bark_model.pt
 
+# Copy remaining files
 COPY . .
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
