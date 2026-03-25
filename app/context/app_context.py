@@ -1,13 +1,13 @@
 import logging
 from typing import Optional
 
-import torch
+# import torch
 
 from app.settings.app import AppSettings
-from models.bark_gpt.model.hf.bark_hf import BarkHF
-from models.bark_gpt.model.model import BarkGPT, GPTConfig
-from models.bark_gpt.model.hf.bark_hf import BarkConfig
-from models.bark_gpt.bark_text_generator.bark_text_generator import BarkTextGenerator
+# from models.bark_gpt.model.hf.bark_hf import BarkHF
+# from models.bark_gpt.model.model import BarkGPT, GPTConfig
+# from models.bark_gpt.model.hf.bark_hf import BarkConfig
+# from models.bark_gpt.bark_text_generator.bark_text_generator import BarkTextGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -27,10 +27,10 @@ class AppContext:
             app_settings: Application settings containing Redis configuration
         """
         self._app_settings = app_settings
-        stoi, itos, hf_model = self.load_bark_gpt_model()
-        self.stoi = stoi
-        self.itos = itos
-        self.hf_model = hf_model
+        # stoi, itos, hf_model = self.load_bark_gpt_model()
+        # self.stoi = stoi
+        # self.itos = itos
+        # self.hf_model = hf_model
 
     @classmethod
     def initialize(cls, app_settings: AppSettings) -> "AppContext":
@@ -60,49 +60,49 @@ class AppContext:
             raise RuntimeError("AppContext has not been initialized")
         return cls._instance
 
-    def get_bark_generator(self) -> BarkTextGenerator:
-        stoi, itos, hf_model = self.get_bark_gpt_model()
-        self._bark_generator: BarkTextGenerator = BarkTextGenerator(
-            hf_model=hf_model,
-            stoi=stoi,
-            itos=itos,
-            device="cuda" if torch.cuda.is_available() else "cpu",
-        )
-        return self._bark_generator
+    # def get_bark_generator(self) -> BarkTextGenerator:
+    #     stoi, itos, hf_model = self.get_bark_gpt_model()
+    #     self._bark_generator: BarkTextGenerator = BarkTextGenerator(
+    #         hf_model=hf_model,
+    #         stoi=stoi,
+    #         itos=itos,
+    #         device="cuda" if torch.cuda.is_available() else "cpu",
+    #     )
+    #     return self._bark_generator
 
-    def load_bark_gpt_model(self):
-        """Load and return the BarkGPT model.
+    # def load_bark_gpt_model(self):
+    #     """Load and return the BarkGPT model.
 
-        Returns:
-            The loaded BarkGPT model
-        """
-        # Placeholder for actual model loading logic
-        checkpoint = torch.load(self._app_settings.model_path, map_location="cpu")
-        stoi = checkpoint["stoi"]
-        itos = checkpoint["itos"]
-        vocab_size = checkpoint["vocab_size"]
+    #     Returns:
+    #         The loaded BarkGPT model
+    #     """
+    #     # Placeholder for actual model loading logic
+    #     checkpoint = torch.load(self._app_settings.model_path, map_location="cpu")
+    #     stoi = checkpoint["stoi"]
+    #     itos = checkpoint["itos"]
+    #     vocab_size = checkpoint["vocab_size"]
 
-        config = GPTConfig(
-            vocab_size=vocab_size,  # real BPE vocab
-            block_size=32,
-            n_layer=2,
-            n_head=8,
-            n_embd=8,
-        )
+    #     config = GPTConfig(
+    #         vocab_size=vocab_size,  # real BPE vocab
+    #         block_size=32,
+    #         n_layer=2,
+    #         n_head=8,
+    #         n_embd=8,
+    #     )
 
-        bark = BarkGPT(config)
+    #     bark = BarkGPT(config)
 
-        bark.load_state_dict(checkpoint["model_state"])
+    #     bark.load_state_dict(checkpoint["model_state"])
 
-        config = BarkConfig(vocab_size=vocab_size)
-        hf_model = BarkHF(config, bark)
+    #     config = BarkConfig(vocab_size=vocab_size)
+    #     hf_model = BarkHF(config, bark)
 
-        return stoi, itos, hf_model
+    #     return stoi, itos, hf_model
 
-    def get_bark_gpt_model(self):
-        """Get the BarkGPT model.
+    # def get_bark_gpt_model(self):
+    #     """Get the BarkGPT model.
 
-        Returns:
-            The BarkGPT model
-        """
-        return self.stoi, self.itos, self.hf_model
+    #     Returns:
+    #         The BarkGPT model
+    #     """
+    #     return self.stoi, self.itos, self.hf_model

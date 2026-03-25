@@ -24,6 +24,7 @@ RUN curl -L -o /models/bark_model.pt \
 ENV MODEL_PATH=/models/bark_model.pt
 
 # Copy remaining files
-COPY . .
+COPY app .
+COPY models .
 
 CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]

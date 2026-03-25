@@ -20,5 +20,6 @@ class BarkClient:
         # )
         # response.raise_for_status()
         # return response.json()["message"]
-        generator = AppContext.get_instance().get_bark_generator()
-        return generator.generate(prompt)
+        # generator = AppContext.get_instance().get_bark_generator()
+        # return generator.generate(prompt)
+        return "wuff wuff arf"
