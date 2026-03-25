@@ -47,6 +47,6 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG
           docker run -d \
             --name my-app \
-            -p 4000:4000 \
+            -p 80:80 \
             --restart unless-stopped \
             ${{ secrets.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG
