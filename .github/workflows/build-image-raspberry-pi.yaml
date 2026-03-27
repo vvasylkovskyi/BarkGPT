@@ -1,11 +1,9 @@
+name: Build and Deploy
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
-    inputs:
-      version:
-        description: "Build Docker Image"
-        required: true
 
 jobs:
   build_docker_image:
@@ -16,18 +14,28 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
+      # NEW: Fetch secrets from Vault
+      - name: Import Secrets from Vault
+        id: secrets
+        uses: hashicorp/vault-action@v2.4.0
+        with:
+          url: http://localhost:8200
+          token: ${{ secrets.VAULT_TOKEN }}
+          secrets: |
+            kv/data/myapp/production DOCKER_USERNAME | DOCKER_USERNAME
+            kv/data/myapp/production DOCKER_PASSWORD | DOCKER_PASSWORD
+
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
 
       - name: Build and Push Container Image
         run: |
           TAG=${{ github.sha }}
-          echo "Using tag: $TAG"
-          docker build -f ./Dockerfile -t ${{ secrets.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG .
-          docker push ${{ secrets.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG
+          docker build -f ./Dockerfile -t ${{ env.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG .
+          docker push ${{ env.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG
 
       - name: Set output tag
         id: set_tag
@@ -37,16 +45,29 @@ jobs:
     runs-on: [self-hosted, ARM64]
     needs: build_docker_image
     steps:
+      # NEW: Fetch secrets from Vault
+      - name: Import Secrets from Vault
+        id: secrets
+        uses: hashicorp/vault-action@v2.4.0
+        with:
+          url: http://localhost:8200
+          token: ${{ secrets.VAULT_TOKEN }}
+          secrets: |
+            kv/data/myapp/production DOCKER_USERNAME | DOCKER_USERNAME
+            kv/data/myapp/production API_KEY | API_KEY
+
       - name: Stop existing container
         run: |
           docker stop my-app || true
           docker rm my-app || true
+
       - name: Pull and run new container
         run: |
           TAG=${{ needs.build_docker_image.outputs.tag }}
-          docker pull ${{ secrets.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG
+          docker pull ${{ env.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG
           docker run -d \
             --name my-app \
             -p 80:80 \
+            -e API_KEY=${{ env.API_KEY }} \
             --restart unless-stopped \
-            ${{ secrets.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG
+            ${{ env.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG
