@@ -22,8 +22,8 @@ jobs:
           url: http://localhost:8200
           token: ${{ secrets.VAULT_TOKEN }}
           secrets: |
-            kv/data/myapp/production DOCKER_USERNAME | DOCKER_USERNAME
-            kv/data/myapp/production DOCKER_PASSWORD | DOCKER_PASSWORD
+            kv/data/production DOCKER_USERNAME | DOCKER_USERNAME
+            kv/data/production DOCKER_PASSWORD | DOCKER_PASSWORD
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -53,8 +53,8 @@ jobs:
           url: http://localhost:8200
           token: ${{ secrets.VAULT_TOKEN }}
           secrets: |
-            kv/data/myapp/production DOCKER_USERNAME | DOCKER_USERNAME
-            kv/data/myapp/production API_KEY | API_KEY
+            kv/data/production DOCKER_USERNAME | DOCKER_USERNAME
+            kv/data/production API_KEY | API_KEY
 
       - name: Stop existing container
         run: |
