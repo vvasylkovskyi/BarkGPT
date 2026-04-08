@@ -71,3 +71,5 @@ jobs:
             -e API_KEY=${{ env.API_KEY }} \
             --restart unless-stopped \
             ${{ env.DOCKER_USERNAME }}/vvasylkovskyi-bark-gpt-api:$TAG
+
+
