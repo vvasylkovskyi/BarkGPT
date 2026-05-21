@@ -5,5 +5,11 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    environment:
+      - OTEL_SERVICE_NAME=my-api
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
+      - OTEL_EXPORTER_OTLP_INSECURE=true
     ports:
-      - "80:80"
+      - "9999:9999"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

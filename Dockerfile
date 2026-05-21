@@ -18,12 +18,12 @@ RUN uv pip install --system --no-cache --index-strategy unsafe-best-match . --ex
 
 RUN mkdir -p /models
 
-RUN curl -L -o /models/bark_model.pt \
-    https://huggingface.co/vvasylkovskyi/barkgpt/resolve/main/bark_model.pt
+# RUN curl -L -o /models/bark_model.pt \
+#     https://huggingface.co/vvasylkovskyi/barkgpt/resolve/main/bark_model.pt
 
 ENV MODEL_PATH=/models/bark_model.pt
 
 # Copy remaining files
 COPY . .
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "9999"]

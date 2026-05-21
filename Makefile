@@ -35,7 +35,7 @@ check: lint test-coverage
 	.PHONY: run
 run:
 	@echo "Starting the development server..."
-	uv run uvicorn app.main:app --host 0.0.0.0 --port 80 --reload
+	uv run uvicorn app.main:app --host 0.0.0.0 --port 9999 --reload
 
 prepare_dataset:
 	@echo "Preparing dataset..."
